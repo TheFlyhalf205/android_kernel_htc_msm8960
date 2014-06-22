@@ -42,17 +42,10 @@ static struct dsi_cmd_desc *display_off_cmds = NULL;
 static struct dsi_cmd_desc *display_on_cmds = NULL;
 static struct dsi_cmd_desc *panel_on_cmds = NULL;
 static struct dsi_cmd_desc *backlight_cmds = NULL;
-static struct dsi_cmd_desc *color_en_on_cmds = NULL;
-static struct dsi_cmd_desc *color_en_off_cmds = NULL;
-static struct dsi_cmd_desc **sre_ctrl_cmds = NULL;
 static int display_off_cmds_count = 0;
 static int display_on_cmds_count = 0;
 static int panel_on_cmds_count = 0;
 static int backlight_cmds_count = 0;
-
-static int color_en_on_cmds_count = 0;
-static int color_en_off_cmds_count = 0;
-static int sre_ctrl_cmds_count = 0;
 
 static char enter_sleep[2] = {0x10, 0x00};
 static char exit_sleep[2] = {0x11, 0x00};
@@ -68,6 +61,10 @@ static char write_control_display[2] = {0x53, 0x24};
 
 static struct dsi_cmd_desc renesas_display_on_cmds[] = {
 	{DTYPE_DCS_LWRITE, 1, 0, 0, 0, sizeof(display_on), display_on},
+};
+
+static struct dsi_cmd_desc samsung_cmd_backlight_cmds[] = {
+	{DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(samsung_ctrl_brightness), samsung_ctrl_brightness},
 };
 
 static char t6_Color_enhancement[33]= {
@@ -156,104 +153,12 @@ static struct dsi_cmd_desc jdi_renesas_cmd_on_cmds_c3[] = {
 	{DTYPE_DCS_WRITE1, 1, 0, 0, 1, sizeof(cabc_bl_limit), cabc_bl_limit},
 	{DTYPE_DCS_WRITE1, 1, 0, 0, 1, sizeof(enable_te), enable_te},
 };
+
 static struct dsi_cmd_desc jdi_display_off_cmds[] = {
 	{DTYPE_DCS_WRITE, 1, 0, 0, 1, sizeof(display_off), display_off},
 	{DTYPE_DCS_WRITE, 1, 0, 0, 48, sizeof(enter_sleep), enter_sleep},
 	{DTYPE_GEN_LWRITE, 1, 0, 0, 1, sizeof(unlock_command), unlock_command},
 	{DTYPE_GEN_LWRITE, 1, 0, 0, 1, sizeof(deep_standby_off), deep_standby_off}
-};
-
-static char renesas_color_en_on[2]= {0xCA, 0x01};
-static char renesas_color_en_off[2]= {0xCA, 0x00};
-
-static struct dsi_cmd_desc sharp_renesas_c1_color_enhance_on_cmds[] = {
-	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(renesas_color_en_on), renesas_color_en_on},
-	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_c1_color_enhance_off_cmds[] = {
-	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(renesas_color_en_off), renesas_color_en_off},
-	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-
-static char SRE_Manual1[] = {0xBB, 0x01, 0x00, 0x00};
-static char SRE_Manual2[] = {0xBB, 0x01, 0x03, 0x02};
-static char SRE_Manual3[] = {0xBB, 0x01, 0x08, 0x05};
-static char SRE_Manual4[] = {0xBB, 0x01, 0x13, 0x08};
-static char SRE_Manual5[] = {0xBB, 0x01, 0x1C, 0x0E};
-static char SRE_Manual6[] = {0xBB, 0x01, 0x25, 0x10};
-static char SRE_Manual7[] = {0xBB, 0x01, 0x38, 0x18};
-static char SRE_Manual8[] = {0xBB, 0x01, 0x5D, 0x28};
-static char SRE_Manual9[] = {0xBB, 0x01, 0x83, 0x38};
-static char SRE_Manual10[] = {0xBB, 0x01, 0xA8, 0x48};
-
-static struct dsi_cmd_desc sharp_renesas_sre1_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual1), SRE_Manual1},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre2_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual2), SRE_Manual2},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre3_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual3), SRE_Manual3},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre4_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual4), SRE_Manual4},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre5_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual5), SRE_Manual5},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre6_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual6), SRE_Manual6},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre7_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual7), SRE_Manual7},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre8_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual8), SRE_Manual8},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre9_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual9), SRE_Manual9},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-static struct dsi_cmd_desc sharp_renesas_sre10_ctrl_cmds[] = {
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual10), SRE_Manual10},
-	   {DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
-};
-
-static struct dsi_cmd_desc *sharp_renesas_sre_ctrl_cmds[10] = {
-		sharp_renesas_sre1_ctrl_cmds,
-		sharp_renesas_sre2_ctrl_cmds,
-		sharp_renesas_sre3_ctrl_cmds,
-		sharp_renesas_sre4_ctrl_cmds,
-		sharp_renesas_sre5_ctrl_cmds,
-		sharp_renesas_sre6_ctrl_cmds,
-		sharp_renesas_sre7_ctrl_cmds,
-		sharp_renesas_sre8_ctrl_cmds,
-		sharp_renesas_sre9_ctrl_cmds,
-		sharp_renesas_sre10_ctrl_cmds,
-};
-
-static struct dsi_cmd_desc samsung_cmd_backlight_cmds[] = {
-        {DTYPE_DCS_WRITE1, 1, 0, 0, 0, sizeof(samsung_ctrl_brightness), samsung_ctrl_brightness},
 };
 
 static int send_display_cmds(struct dsi_cmd_desc *cmd, int cnt,
@@ -264,7 +169,9 @@ static int send_display_cmds(struct dsi_cmd_desc *cmd, int cnt,
 
 	cmdreq.cmds = cmd;
 	cmdreq.cmds_cnt = cnt;
-	cmdreq.flags = CMD_REQ_COMMIT | CMD_CLK_CTRL;
+	cmdreq.flags = CMD_REQ_COMMIT;
+	if (clk_ctrl)
+		cmdreq.flags |= CMD_CLK_CTRL;
 	cmdreq.rlen = 0;
 	cmdreq.cb = NULL;
 
@@ -307,13 +214,28 @@ static void t6_dim_on(struct msm_fb_data_type *mfd)
 	if (dim_on_cmds == NULL)
 		return;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
 	send_display_cmds(dim_on_cmds, dim_on_cmds_count, clk_ctrl);
 }
 #endif
 
 #ifdef COLOR_ENHANCE
+static char renesas_color_en_on[2]= {0xCA, 0x01};
+static char renesas_color_en_off[2]= {0xCA, 0x00};
+
+static struct dsi_cmd_desc sharp_renesas_c1_color_enhance_on_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(renesas_color_en_on), renesas_color_en_on},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_c1_color_enhance_off_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(renesas_color_en_off), renesas_color_en_off},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+
 static struct dsi_cmd_desc *color_en_on_cmds = NULL;
 static struct dsi_cmd_desc *color_en_off_cmds = NULL;
 static int color_en_on_cmds_count = 0;
@@ -326,7 +248,8 @@ static void t6_color_enhance(struct msm_fb_data_type *mfd, int on)
 	if (color_en_on_cmds == NULL || color_en_off_cmds == NULL)
 		return;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
 	if (on) {
 		send_display_cmds(color_en_on_cmds, color_en_on_cmds_count,
@@ -341,13 +264,92 @@ static void t6_color_enhance(struct msm_fb_data_type *mfd, int on)
 #endif
 
 #ifdef CONFIG_SRE_CONTROL
+static char SRE_Manual1[] = {0xBB, 0x01, 0x00, 0x00};
+static char SRE_Manual2[] = {0xBB, 0x01, 0x03, 0x02};
+static char SRE_Manual3[] = {0xBB, 0x01, 0x08, 0x05};
+static char SRE_Manual4[] = {0xBB, 0x01, 0x13, 0x08};
+static char SRE_Manual5[] = {0xBB, 0x01, 0x1C, 0x0E};
+static char SRE_Manual6[] = {0xBB, 0x01, 0x25, 0x10};
+static char SRE_Manual7[] = {0xBB, 0x01, 0x38, 0x18};
+static char SRE_Manual8[] = {0xBB, 0x01, 0x5D, 0x28};
+static char SRE_Manual9[] = {0xBB, 0x01, 0x83, 0x38};
+static char SRE_Manual10[] = {0xBB, 0x01, 0xA8, 0x48};
+
+static struct dsi_cmd_desc sharp_renesas_sre1_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual1), SRE_Manual1},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre2_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual2), SRE_Manual2},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre3_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual3), SRE_Manual3},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre4_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual4), SRE_Manual4},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre5_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual5), SRE_Manual5},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre6_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual6), SRE_Manual6},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre7_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual7), SRE_Manual7},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre8_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual8), SRE_Manual8},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre9_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual9), SRE_Manual9},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+static struct dsi_cmd_desc sharp_renesas_sre10_ctrl_cmds[] = {
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(unlock), unlock},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(SRE_Manual10), SRE_Manual10},
+	{DTYPE_GEN_LWRITE, 1, 0, 0, 0, sizeof(lock), lock},
+};
+
+static struct dsi_cmd_desc *sharp_renesas_sre_ctrl_cmds[10] = {
+	sharp_renesas_sre1_ctrl_cmds,
+	sharp_renesas_sre2_ctrl_cmds,
+	sharp_renesas_sre3_ctrl_cmds,
+	sharp_renesas_sre4_ctrl_cmds,
+	sharp_renesas_sre5_ctrl_cmds,
+	sharp_renesas_sre6_ctrl_cmds,
+	sharp_renesas_sre7_ctrl_cmds,
+	sharp_renesas_sre8_ctrl_cmds,
+	sharp_renesas_sre9_ctrl_cmds,
+	sharp_renesas_sre10_ctrl_cmds,
+};
+
+static struct dsi_cmd_desc **sre_ctrl_cmds = NULL;
+static int sre_ctrl_cmds_count = 0;
+
 static void t6_sre_ctrl(struct msm_fb_data_type *mfd, unsigned long level)
 {
 	static long prev_level = 0, current_stage = 0, prev_stage = 0, tmp_stage = 0;
 	struct dsi_cmd_desc *sre_cmds = NULL;
 	bool clk_ctrl = false;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
 	if (prev_level != level) {
 		prev_level = level;
@@ -442,7 +444,8 @@ static void t6_set_cabc(struct msm_fb_data_type *mfd, int mode)
 			set_cabc_Camera_cmds == NULL)
 		return;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
 	mutex_lock(&set_cabc_mutex);
 	cabc_mode = mode;
@@ -506,7 +509,7 @@ static int resume_blk = 1;
 static int t6_lcd_off(struct platform_device *pdev)
 {
 	struct msm_fb_data_type *mfd;
- 
+
 	mfd = platform_get_drvdata(pdev);
 
 	if (!mfd)
@@ -530,7 +533,8 @@ static int t6_display_on(struct platform_device *pdev)
 	if (mfd->key != MFD_KEY)
 		return -EINVAL;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
 	send_display_cmds(display_on_cmds, display_on_cmds_count, clk_ctrl);
 
@@ -549,7 +553,8 @@ static int t6_display_off(struct platform_device *pdev)
 	if (mfd->key != MFD_KEY)
 		return -EINVAL;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
 	send_display_cmds(display_off_cmds, display_off_cmds_count, clk_ctrl);
 
@@ -584,11 +589,12 @@ static unsigned char t6_shrink_pwm(int val)
 }
 
 static void t6_set_backlight(struct msm_fb_data_type *mfd)
-{	
+{
 	bool clk_ctrl = false;
 	int rc;
 
-	clk_ctrl = true;
+	if (mfd && mfd->panel_info.type == MIPI_CMD_PANEL)
+		clk_ctrl = true;
 
     samsung_ctrl_brightness[1] = t6_shrink_pwm((unsigned char)(mfd->bl_level));
 
@@ -640,19 +646,23 @@ static void scorpius_jdi_renesas_panel_init(void)
 	display_off_cmds_count = ARRAY_SIZE(jdi_display_off_cmds);
 	backlight_cmds = samsung_cmd_backlight_cmds;
 	backlight_cmds_count = ARRAY_SIZE(samsung_cmd_backlight_cmds);
+#ifdef CONFIG_CABC_DIMMING_SWITCH
 	dim_on_cmds = jdi_renesas_dim_on_cmds;
 	dim_on_cmds_count = ARRAY_SIZE(jdi_renesas_dim_on_cmds);
 	dim_off_cmds = jdi_renesas_dim_off_cmds;
 	dim_off_cmds_count = ARRAY_SIZE(jdi_renesas_dim_off_cmds);
+#endif
+#ifdef COLOR_ENHANCE
 	color_en_on_cmds = sharp_renesas_c1_color_enhance_on_cmds;
 	color_en_on_cmds_count = ARRAY_SIZE(sharp_renesas_c1_color_enhance_on_cmds);
 	color_en_off_cmds = sharp_renesas_c1_color_enhance_off_cmds;
 	color_en_off_cmds_count = ARRAY_SIZE(sharp_renesas_c1_color_enhance_off_cmds);
+#endif
 #ifdef CONFIG_SRE_CONTROL
 	sre_ctrl_cmds = sharp_renesas_sre_ctrl_cmds;
 	sre_ctrl_cmds_count = ARRAY_SIZE(sharp_renesas_sre1_ctrl_cmds);
 #endif
-#ifdef CONFIG_FB_MSM_CABC_LEVEL_CONTROL
+#ifdef CABC_LEVEL_CONTROL
 	set_cabc_UI_cmds = sharp_renesas_set_cabc_UI_cmds;
 	set_cabc_UI_cmds_count = ARRAY_SIZE(sharp_renesas_set_cabc_UI_cmds);
 	set_cabc_Video_cmds = sharp_renesas_set_cabc_Video_cmds;
@@ -686,13 +696,17 @@ static void scorpius_jdi_panel_init_c3(void)
 	dim_off_cmds = jdi_renesas_dim_off_cmds;
 	dim_off_cmds_count = ARRAY_SIZE(jdi_renesas_dim_off_cmds);
 #endif
+#ifdef COLOR_ENHANCE
 	color_en_on_cmds = sharp_renesas_c1_color_enhance_on_cmds;
 	color_en_on_cmds_count = ARRAY_SIZE(sharp_renesas_c1_color_enhance_on_cmds);
 	color_en_off_cmds = sharp_renesas_c1_color_enhance_off_cmds;
 	color_en_off_cmds_count = ARRAY_SIZE(sharp_renesas_c1_color_enhance_off_cmds);
+#endif
+#ifdef CONFIG_SRE_CONTROL
 	sre_ctrl_cmds = sharp_renesas_sre_ctrl_cmds;
 	sre_ctrl_cmds_count = ARRAY_SIZE(sharp_renesas_sre1_ctrl_cmds);
-#ifdef CONFIG_FB_MSM_CABC_LEVEL_CONTROL
+#endif
+#ifdef CABC_LEVEL_CONTROL
 	set_cabc_UI_cmds = sharp_renesas_set_cabc_UI_cmds;
 	set_cabc_UI_cmds_count = ARRAY_SIZE(sharp_renesas_set_cabc_UI_cmds);
 	set_cabc_Video_cmds = sharp_renesas_set_cabc_Video_cmds;
@@ -763,7 +777,9 @@ static struct msm_fb_panel_data t6_panel_data = {
 #ifdef CABC_LEVEL_CONTROL
 	.set_cabc = t6_set_cabc,
 #endif
+#ifdef CONFIG_SRE_CONTROL
 	.sre_ctrl = t6_sre_ctrl,
+#endif
 #ifdef MDP_GAMMA
 	.mdp_gamma = t6_mdp_gamma,
 #endif
