@@ -58,6 +58,7 @@
 #define MSM_FB_OVERLAY1_WRITEBACK_SIZE (0)
 #endif  /* CONFIG_FB_MSM_OVERLAY1_WRITEBACK */
 
+
 static struct resource msm_fb_resources[] = {
 	{
 		.flags = IORESOURCE_DMA,
@@ -73,6 +74,7 @@ static int t6_detect_panel(const char *name)
 		strnlen(HDMI_PANEL_NAME,
 			PANEL_NAME_MAX_LEN)))
 		return 0;
+
 	return -ENODEV;
 }
 
@@ -440,6 +442,7 @@ static int mipi_dsi_panel_power(int on)
 			return -ENODEV;
 		}
 	}
+
 	return 0;
 }
 
